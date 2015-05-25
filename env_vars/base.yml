@@ -1,2 +1,10 @@
-timezone: Europe/London
 hostname: skyscanner.local.com
+locale: 'en_GB.UTF-8'
+language: 'en_GB:en'
+timezone: 'Europe/London'
+ntp_server: 'pool.ntp.org'
+deploy_user: deploy
+deploy_password: 'skyscanner'
+root_password: 'skyscanner'
+
+update_apt_cache: yes
