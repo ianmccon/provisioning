@@ -8,3 +8,4 @@ deploy_password: 'skyscanner'
 root_password: 'skyscanner'
 
 update_apt_cache: yes
+site_root_path: '/webapps/sites/default'

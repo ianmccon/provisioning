@@ -26,8 +26,8 @@
 - name: Install aptitude
   action: apt pkg=aptitude state=installed
 
-# - name: Upgrade APT to the latest packages
-#   action: apt upgrade=safe
+- name: Upgrade APT to the latest packages
+  action: apt upgrade=safe
 
 - name: Add deployment user
   action: user name={{ deploy_user }} shell=/bin/bash createhome=yes password={{deploy_password}}
@@ -82,6 +82,16 @@
            creates=/etc/nginx/sites-enabled/000-default
   notify: reload nginx
   tags: provision-nginx
+
+- name: Create the web root directory
+  file: path={{ site_root_path }}
+        mode=0777
+        state=directory
+
+- name: Copy default template
+  template: src=index.j2
+            dest={{ site_root_path }}/index.html
+            backup=no
 
 - name: Ensure Nginx service is started
   service: name=nginx state=started enabled=yes
