@@ -1,0 +1,89 @@
+---
+- name: Generate locale
+  command: /usr/sbin/locale-gen {{ locale }}
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Set locale
+  command: /usr/sbin/update-locale LANG={{ locale }} LC_ALL={{ locale }} LANGUAGE={{ language }}
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Set /etc/localtime
+  command: /bin/cp /usr/share/zoneinfo/{{ timezone }} /etc/localtime
+
+- name: Set timezone (/etc/timezone)
+  template: src=locale/timezone dest=/etc/timezone
+  notify: update timezone
+
+- name: Install ntp packages
+  action: apt pkg=ntp state=installed
+
+- name: Change root password
+  action: user name=root password={{root_password}}
+
+- name: Update APT package cache
+  action: apt update_cache=yes
+
+- name: Install aptitude
+  action: apt pkg=aptitude state=installed
+
+- name: Upgrade APT to the latest packages
+  action: apt upgrade=safe
+
+- name: Add deployment user
+  action: user name={{ deploy_user }} shell=/bin/bash createhome=yes password={{deploy_password}}
+
+- name: Install fail2ban
+  action: apt pkg=fail2ban state=installed
+
+- name: Create the SSH directory.
+  file: state=directory path=/home/{{ deploy_user }}/.ssh/
+
+- name: Install nano
+  apt: name="nano" state=present
+
+- name: Set hostname
+  hostname: name={{ hostname }}
+
+- name: Remove sudo group rights
+  action: lineinfile dest=/etc/sudoers regexp="^%sudo" state=absent
+
+- name: Add deploy user to sudoers
+  action: lineinfile dest=/etc/sudoers regexp="deploy ALL" line="deploy ALL=(ALL) NOPASSWD:ALL" state=present
+
+- name: Install unattended-upgrades
+  action: apt pkg=unattended-upgrades state=present
+
+- name: Set up Postfix to relay mail
+  action: command debconf-set-selections /tmp/postfix_selections
+
+- name: Install Nginx
+  apt: name=nginx update_cache={{ update_apt_cache }} state=installed
+  tags:
+    - packages
+    - provision-nginx
+
+
+- name: Create the Nginx configuration file
+  template: src=nginx_default_site_config.j2
+            dest=/etc/nginx/sites-available/000-default
+            backup=yes
+  when: not ssl
+  tags: provision-nginx
+  notify: reload nginx
+
+- name: Ensure that the default site is disabled
+  command: rm /etc/nginx/sites-enabled/default
+           removes=/etc/nginx/sites-enabled/default
+  notify: reload nginx
+  tags: provision-nginx
+
+- name: Ensure that the application site is enabled
+  command: ln -s /etc/nginx/sites-available/000-default
+           /etc/nginx/sites-enabled/000-default
+           creates=/etc/nginx/sites-enabled/000-default
+  notify: reload nginx
+  tags: provision-nginx
+
+- name: Ensure Nginx service is started
+  service: name=nginx state=started enabled=yes
+  tags: provision-nginx

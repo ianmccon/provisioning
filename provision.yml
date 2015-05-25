@@ -1,0 +1,14 @@
+---
+- name: Provisioning a new server
+  hosts: all
+  # user: root
+  gather_facts: true
+  sudo: true
+
+  vars_files:
+    - env_vars/base.yml
+    - env_vars/main.yml
+    - env_vars/secure.yml
+
+  roles:
+    - provision
