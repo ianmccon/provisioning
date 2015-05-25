@@ -1,6 +1,10 @@
 This project is designed to provision a vagrant box and install nginx web server
 with a default web page
 
+This project does not implement all the provisioning steps that I would normally make
+I would normall copy ssh keys to the server for the deploy user and disable ssh password login
+and disable root login
+
 ## Usage
 
 1. Clone this repo on your local machine
