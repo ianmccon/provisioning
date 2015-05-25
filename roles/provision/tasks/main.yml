@@ -26,9 +26,6 @@
 - name: Install aptitude
   action: apt pkg=aptitude state=installed
 
-- name: Upgrade APT to the latest packages
-  action: apt upgrade=safe
-
 - name: Add deployment user
   action: user name={{ deploy_user }} shell=/bin/bash createhome=yes password={{deploy_password}}
 
