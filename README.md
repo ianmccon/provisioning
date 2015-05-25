@@ -1,5 +1,7 @@
 This project is designed to provision a vagrant box and install nginx web server
-with a default web page
+with a default web page using ansible
+
+Ansible must be installed on the computer that is running the project.
 
 This project does not implement all the provisioning steps that I would normally make
 I would normall copy ssh keys to the server for the deploy user and disable ssh password login
